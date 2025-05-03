@@ -51,17 +51,19 @@ def create_analista_roi_agent_definition():
 
 def run_analista_roi_task(task_description: str, context: dict = None):
     """Simula a execução de uma tarefa pelo Agente Analista de ROI (sem LLM real).
-    
-    Args:
-        task_description: Descrição da tarefa a ser executada.
-        context: Dicionário com informações contextuais (opcional).
-        
-    Returns:
-        Uma tupla contendo o resultado da ferramenta escolhida e o contexto atualizado.
-    """
+    Agora utiliza o conteúdo da transcrição/resumo da reunião para enriquecer projeções, benefícios e argumentos financeiros."""
     if context is None:
         context = {}
-    
+    # NOVO: incorporar transcrição/resumo da reunião ao contexto, se disponível
+    import streamlit as st
+    if hasattr(st, "session_state") and "reuniao_transcricao" in st.session_state and st.session_state.reuniao_transcricao:
+        context["reuniao_transcricao"] = st.session_state.reuniao_transcricao
+        # Se não houver business_problem explícito, usar a transcrição como base
+        if not context.get("business_problem"):
+            context["business_problem"] = st.session_state.reuniao_transcricao
+        # Se não houver client_pain_points explícito, tentar extrair tópicos da transcrição (simples split)
+        if not context.get("client_pain_points"):
+            context["client_pain_points"] = [p.strip() for p in st.session_state.reuniao_transcricao.split("\n") if p.strip()]
     # Simulação simplificada da escolha de ferramenta com base em keywords
     task_lower = task_description.lower()
     selected_tool = None
@@ -125,6 +127,7 @@ def run_analista_roi_task(task_description: str, context: dict = None):
         no_tool_message = "Nenhuma ferramenta apropriada encontrada (simulado). Tarefa pode exigir análise manual ou mais detalhes."
         print(f"\n{no_tool_message}")
         return no_tool_message, context
+
 
 # Exemplo de execução de tarefa
 if __name__ == "__main__":

@@ -657,26 +657,51 @@ Equipe FSTech Consulting Agency"""
                         add_log("Reunião precisou ser reagendada", "Consultor de Diagnóstico")
                         st.rerun()
             
-            # Se a reunião foi confirmada como realizada, mostrar a interface de geração de proposta
+            # Se a reunião foi confirmada como realizada, solicitar upload de transcrição/resumo antes da proposta
             if 'reuniao_realizada' in st.session_state and st.session_state.reuniao_realizada:
-                st.markdown("O consultor está gerando a proposta comercial...")
-                
-                # Technical analysis summary displayed from previous step
-                if st.session_state.arquitetura_proposta:
-                    with st.expander("Análise Técnica do Arquiteto", expanded=False):
-                        st.markdown(st.session_state.arquitetura_proposta)
-            
-            if 'reuniao_realizada' in st.session_state and st.session_state.reuniao_realizada:
-                # ROI Analysis summary displayed from previous step
-                if st.session_state.roi_summary:
-                    with st.expander("Análise de ROI", expanded=False):
-                        st.markdown(st.session_state.roi_summary)
-                
-                # Proposal parameters
-                col1, col2 = st.columns(2)
-                with col1:
-                    valor_proposta = st.number_input("Valor da Proposta (R$)", min_value=1000, max_value=500000, value=15000, step=1000)
-                    nivel_complexidade = st.selectbox("Nível de Complexidade", ["baixa", "média", "alta"], index=1)
+                st.markdown("#### Faça upload da transcrição e resumo da reunião realizada")
+                uploaded_file = st.file_uploader("Transcrição/Resumo da Reunião (.txt, .md, .pdf)", type=["txt", "md", "pdf"])
+                resumo_manual = st.text_area("Ou cole aqui um resumo/manual da reunião", height=200)
+
+                conteudo_reuniao = None
+                if uploaded_file is not None:
+                    # PDF handling could be added if needed
+                    if uploaded_file.type == "application/pdf":
+                        try:
+                            import PyPDF2
+                            reader = PyPDF2.PdfReader(uploaded_file)
+                            conteudo_reuniao = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+                        except Exception as e:
+                            st.error(f"Erro ao ler PDF: {e}")
+                    else:
+                        conteudo_reuniao = uploaded_file.read().decode("utf-8")
+                    st.session_state.reuniao_transcricao = conteudo_reuniao
+                    st.success("Arquivo carregado com sucesso!")
+                elif resumo_manual.strip():
+                    conteudo_reuniao = resumo_manual.strip()
+                    st.session_state.reuniao_transcricao = conteudo_reuniao
+
+        if 'reuniao_transcricao' in st.session_state and st.session_state.reuniao_transcricao:
+            st.markdown("---")
+            st.markdown("**Resumo/Transcrição disponível para os agentes.**")
+            if st.button("Confirmar e Prosseguir para Análise Técnica e ROI", type="primary"):
+                # Executar agentes com a transcrição antes de liberar a proposta
+                from FSTech_Consulting_Agency.Arquiteto_de_Software.arquiteto_de_software import run_arquiteto_task
+                from FSTech_Consulting_Agency.Analista_ROI.analista_roi import run_analista_roi_task
+                # Rodar análise técnica e ROI (pode ser expandido conforme o fluxo real)
+                arquitetura, _ = run_arquiteto_task("Análise de arquitetura baseada na reunião", {})
+                st.session_state.arquitetura_proposta = arquitetura if isinstance(arquitetura, str) else str(arquitetura)
+                roi, _ = run_analista_roi_task("Projeção de ROI baseada na reunião", {})
+                st.session_state.roi_summary = roi["analysis_summary"] if isinstance(roi, dict) and "analysis_summary" in roi else str(roi)
+                st.session_state.current_step = 7
+                st.rerun()
+        else:
+            st.warning("Por favor, faça o upload do arquivo ou preencha o resumo antes de prosseguir.")
+
+        # Technical analysis summary displayed from previous step
+        if st.session_state.arquitetura_proposta:
+            with st.expander("Análise Técnica do Arquiteto", expanded=False):
+                st.markdown(st.session_state.arquitetura_proposta)
                 
                 with col2:
                     horas_estimadas = st.number_input("Horas Estimadas", min_value=10, max_value=1000, value=80, step=10)

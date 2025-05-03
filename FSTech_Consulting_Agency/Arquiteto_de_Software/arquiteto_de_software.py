@@ -109,7 +109,7 @@ Use as ferramentas disponíveis para cumprir suas responsabilidades.
 
 # Lista de ferramentas disponíveis para este agente
 ARQUITETO_TOOLS = [
-    system_architecture_designer.design_system_architecture,
+    system_architecture_designer.design_architecture_and_assess_complexity,
     api_blueprint_generator.generate_api_blueprint,
     scalability_tester.test_scalability,
     security_audit_assistant.perform_security_audit,
@@ -128,9 +128,17 @@ def create_arquiteto_agent_definition():
 # --- Lógica de Execução (Exemplo Simplificado - Sem LLM Real) ---
 
 def run_arquiteto_task(task_description: str, context: dict = None):
-    """Simula a execução de uma tarefa pelo Agente Arquiteto (sem LLM real)."""
+    """Simula a execução de uma tarefa pelo Agente Arquiteto (sem LLM real).
+    Agora utiliza o conteúdo da transcrição/resumo da reunião para enriquecer as análises técnicas."""
     agent_def = create_arquiteto_agent_definition()
     context = context or {}
+    # NOVO: incorporar transcrição/resumo da reunião ao contexto, se disponível
+    import streamlit as st
+    if hasattr(st, "session_state") and "reuniao_transcricao" in st.session_state and st.session_state.reuniao_transcricao:
+        context["reuniao_transcricao"] = st.session_state.reuniao_transcricao
+        # Se não houver requirements explícitos, usar a transcrição como base
+        if not context.get("requirements"):
+            context["requirements"] = [st.session_state.reuniao_transcricao]
     print(f"--- Executando Tarefa com Agente: {agent_def['name']} ---")
     print(f"Tarefa: {task_description}")
     print(f"Contexto: {context}")
@@ -145,10 +153,9 @@ def run_arquiteto_task(task_description: str, context: dict = None):
     task_lower = task_description.lower()
 
     if "arquitetura" in task_lower or "projetar sistema" in task_lower:
-        selected_tool = system_architecture_designer.design_system_architecture
+        selected_tool = system_architecture_designer.design_architecture_and_assess_complexity
         args = {
-            "requirements": context.get("requirements", ["Requisito Padrão"]),
-            "constraints": context.get("constraints", [])
+            "requirements_text": context.get("reuniao_transcricao", "") or "\n".join(context.get("requirements", ["Requisito Padrão"]))
         }
     elif "blueprint" in task_lower or "especificação api" in task_lower:
         selected_tool = api_blueprint_generator.generate_api_blueprint
@@ -185,7 +192,7 @@ def run_arquiteto_task(task_description: str, context: dict = None):
             print(result)
             print("---------------------------")
             # Atualizar contexto se necessário (ex: descrição da arquitetura para auditoria)
-            if selected_tool == system_architecture_designer.design_system_architecture:
+            if selected_tool == system_architecture_designer.design_architecture_and_assess_complexity:
                 context["system_desc"] = result # Salvar descrição para possível auditoria
             return result, context
         except Exception as e:
@@ -196,6 +203,7 @@ def run_arquiteto_task(task_description: str, context: dict = None):
         no_tool_message = "Nenhuma ferramenta apropriada encontrada (simulado). Tarefa pode exigir análise manual ou mais detalhes."
         print(f"\n{no_tool_message}")
         return no_tool_message, context
+
 
 # Exemplo de execução de tarefa
 if __name__ == "__main__":

@@ -163,6 +163,53 @@ Cada agente possui scripts e ferramentas próprias, localizados em seus respecti
 
 ---
 
+## Testes Automatizados
+
+O projeto inclui testes automatizados para garantir a qualidade e estabilidade do código, especialmente para o fluxo de processamento de transcrições de reuniões:
+
+### Estrutura de Testes
+
+```
+tests/
+├── Arquiteto_de_Software/
+├── CEO/
+├── Consultor_de_Diagnostico/
+├── Coordenador_de_Projetos/
+├── Especialista_Tecnico/
+├── Gerente_de_Marketing_Digital/
+├── Suporte_Administrativo/
+├── Analista_ROI/
+│   └── test_analista_roi.py     # Testes para o Analista de ROI
+├── integration_test_fluxo.py     # Testes de integração para fluxos completos
+└── __init__.py
+```
+
+### Tipos de Testes
+
+1. **Testes Unitários**: Verificam se cada agente funciona corretamente individualmente.
+   - Exemplo: `test_analista_roi.py` testa o processamento de transcrições da reunião pelo Analista de ROI.
+
+2. **Testes de Integração**: Verificam se todo o fluxo funciona corretamente.
+   - Exemplo: `integration_test_fluxo.py` testa o fluxo completo desde a entrada da transcrição até sua análise pelos agentes Arquiteto e Analista de ROI.
+
+### Executando os Testes
+
+Para rodar todos os testes:
+```bash
+python -m pytest
+```
+
+Para rodar testes específicos:
+```bash
+# Testes do Analista de ROI
+python -m pytest FSTech_Consulting_Agency/tests/Analista_ROI/
+
+# Testes de integração
+python -m pytest FSTech_Consulting_Agency/tests/integration_test_fluxo.py
+```
+
+> **Importante**: Execute os testes a partir da raiz do projeto para garantir que todos os imports funcionem corretamente.
+
 ## Contribuindo com o Projeto
 
 1. **Fork este repositório** e crie uma branch para sua feature ou correção.
