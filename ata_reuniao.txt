@@ -1,0 +1,78 @@
+ATA DE REUNIÃO
+Projeto: Sistema de Análise de Sentimentos em Dados de Atendimento
+Local: Google Meet
+Contratante: Felipe Oliveira (kabbalah.jundiai@gmail.com)
+Responsável Técnico: [Desenvolvedor]
+
+1. Objetivo da Reunião
+Definir o escopo técnico e arquitetônico do sistema de análise de sentimentos e confirmar as prioridades de entrega.
+
+2. Participantes
+Felipe Oliveira – Contratante
+
+[Desenvolvedor] – Consultor Técnico
+
+3. Principais Pontos Abordados
+3.1 Fontes de Dados
+Arquivos de entrada em formato TXT e CSV.
+
+Tamanho esperado: até 1 milhão de linhas por arquivo.
+
+3.2 Pipeline de Processamento
+Importação dos dados brutos.
+
+Pré-processamento textual:
+
+Remoção de stopwords
+
+Normalização de caracteres
+
+Tokenização
+
+Opcionalmente, lematização
+
+Análise de Sentimento:
+
+Classificação automática em positivo, neutro, negativo.
+
+Primeira fase: usar modelo pré-treinado (ex: distilbert-base-uncased-finetuned-sst-2-english).
+
+Segunda fase (opcional): ajustar pipeline para treinar modelo customizado.
+
+Armazenamento Intermediário:
+
+Banco local SQLite para registros processados.
+
+3.3 Relatórios e Dashboards
+Estatísticas por operador de atendimento.
+
+Distribuição diária de sentimentos.
+
+Comparativos por mês.
+
+Exportação em Excel (.xlsx) e visualizações dinâmicas em Dash ou Plotly.
+
+3.4 Requisitos Técnicos
+Totalmente offline.
+
+Modularidade para inserção futura de novos modelos ou funções.
+
+Interface simples para seleção de arquivos e parâmetros básicos de análise.
+
+4. Pontos de Atenção Identificados
+Performance: Processamento em lote deve usar paralelismo (multiprocessing) para garantir agilidade.
+
+Memória: Utilizar leitura em streaming (chunked reading) para arquivos muito grandes.
+
+Escalabilidade futura: Sistema deve permitir inserção de análises de tópicos (LDA, clustering) na próxima fase do projeto.
+
+5. Próximos Passos
+Ação	Responsável	Prazo
+Elaboração de proposta técnica e plano de arquitetura	
+Análise da proposta e ajustes	
+
+6. Observações Finais
+O contratante reforçou a importância de gerar insights acionáveis para equipe de atendimento, preferindo visualizações intuitivas e métricas claras.
+
+📜 Encerramento
+Nada mais havendo a tratar, a reunião foi encerrada às 11h00, com o compromisso de envio da proposta formal até a data combinada.
