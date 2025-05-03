@@ -1,73 +1,197 @@
-# FSTech Consulting Agency - Estrutura do Projeto
+# FSTech Consulting Agency
 
 ## Visão Geral
 
-Este repositório contém a estrutura base para a **FSTech Consulting Agency**, uma agência de consultoria focada em auxiliar pequenas e médias empresas (PMEs), solopreneurs e adultos em adaptação tecnológica a adotar soluções de IA e automação de forma acessível e personalizada.
-
-O objetivo principal é simplificar processos, automatizar tarefas e impulsionar o crescimento dos clientes através de consultoria, implementação e suporte tecnológico especializado, seguindo as diretrizes de desenvolvimento de agentes da OpenAI.
+A **FSTech Consulting Agency** é uma plataforma de consultoria tecnológica que automatiza e orquestra todo o ciclo de atendimento a pequenas e médias empresas (PMEs), solopreneurs e profissionais em transição digital. O objetivo é simplificar processos, otimizar operações e impulsionar o crescimento sustentável dos clientes, unindo tecnologia, consultoria personalizada e automação de ponta a ponta.
 
 **Tagline:** Tecnologia simplificada para o seu crescimento.
 
+## Propósito, Missão e Visão
+
+- **Propósito:** Tornar a tecnologia acessível, prática e personalizada para empresas e profissionais, facilitando a adoção de soluções inovadoras e eficientes.
+- **Missão:** Capacitar clientes com ferramentas e conhecimento tecnológico, entregando diagnóstico preciso, soluções sob medida e suporte contínuo.
+- **Visão:** Ser referência em consultoria tecnológica para PMEs e profissionais em adaptação digital.
+
+---
+
 ## Estrutura do Projeto
 
-O projeto está organizado em diretórios, cada um representando um agente (função) dentro da agência, com ferramentas específicas e instruções claras:
+O projeto está organizado de forma modular, com cada diretório representando um agente ou função dentro da agência. Cada agente possui ferramentas próprias para executar tarefas específicas.
 
 ```
 FSTech_Consulting_Agency/
 ├── CEO/
-│   ├── __init__.py
-│   ├── ceo.py
-│   ├── instructions.md
-│   └── tools/
-│       ├── business_strategy_builder.py
-│       ├── client_relationship_manager.py
-│       ├── kpi_dashboard_manager.py
-│       └── risk_assessment_tool.py
 ├── Consultor_de_Diagnostico/
-│   ├── ...
-│   └── tools/
-│       ├── client_intake_form_generator.py
-│       ├── crm_status_updater.py  # Integrado com ClickUp
-│       ├── proposal_builder.py
-│       ├── roadmap_generator.py
-│       └── tech_diagnostic_analyzer.py
 ├── Especialista_Tecnico/
-│   └── ...
 ├── Arquiteto_de_Software/
-│   └── ...
 ├── Suporte_Administrativo/
-│   └── tools/
-│       ├── appointment_scheduler_manager.py # Integrado com Cal.com
-│       ├── client_support_bot.py
-│       ├── feedback_collector.py
-│       └── subscription_tracker.py
 ├── Gerente_de_Marketing_Digital/
-│   └── tools/
-│       ├── ad_campaign_launcher.py
-│       ├── content_calendar_manager.py
-│       ├── crm_lead_creator.py      # Integrado com ClickUp
-│       ├── seo_optimizer.py
-│       └── social_media_post_generator.py
 ├── Coordenador_de_Projetos/
-│   └── tools/
-│       ├── client_update_sender.py
-│       ├── crm_project_status_updater.py # Integrado com ClickUp
-│       ├── progress_tracker.py         # Integrado com ClickUp
-│       ├── project_timeline_manager.py
-│       └── task_assignment_manager.py
 ├── utils/
-│   ├── __init__.py
-│   └── clickup_client.py       # Utilitário para API ClickUp
-├── tests/                      # Estrutura para testes futuros
-├── agency.py                 # Arquivo principal da agência (placeholder)
-├── agency_manifesto.md       # Define propósito, visão, missão e valores
-├── communication_flows.md    # Descreve a comunicação interna e externa
-├── requirements.txt          # Dependências Python (inclui openai, clickup-python, requests, python-dotenv)
-├── .env.example              # Exemplo de variáveis de ambiente (CLICKUP_API_KEY, CALCOM_API_KEY, OPENAI_API_KEY)
-├── .gitignore                # Arquivos a serem ignorados pelo Git
-├── README.md                 # Este arquivo
-└── MANUAL.md                 # Guia de uso e entendimento da estrutura
+├── tests/
+├── agency.py
+├── agency_manifesto.md
+├── communication_flows.md
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── README.md
+└── MANUAL.md
 ```
+
+- **app.py**: Interface principal (Streamlit), orquestra todo o fluxo operacional.
+- **orquestrador_fstech.py**: Hub central de lógica, coordena agentes e integrações.
+- **requirements.txt**: Lista de dependências do projeto.
+- **tests/**: Testes automatizados.
+- **agency_manifesto.md**: Propósito, missão, visão e valores.
+- **communication_flows.md**: Descreve fluxos de comunicação internos e externos.
+
+---
+
+## Como Funciona: Fluxo Operacional
+
+O sistema guia o usuário (consultor) por todas as etapas do ciclo de vendas e atendimento, de forma automatizada e interativa:
+
+1. **Início do Processo**
+   - Usuário preenche dados do cliente (nome, empresa, briefing, objetivo).
+   - Criação automática de lead no CRM (ClickUp).
+
+2. **Briefing e Diagnóstico**
+   - Exibição e análise do briefing.
+   - Geração automática de mensagem para o cliente.
+
+3. **Análise de Oportunidade**
+   - Avaliação do potencial do projeto.
+   - Registro de observações.
+
+4. **Agendamento de Reunião**
+   - Proposta de datas/horários.
+   - Integração com Cal.com para agendamento automático.
+
+5. **Análise Técnica**
+   - Avaliação do arquiteto de software.
+   - Sugestão de arquitetura e análise de complexidade.
+
+6. **Pesquisa de Mercado**
+   - Consultor pode realizar pesquisas e coletar dados para embasar a proposta.
+
+7. **Geração de Proposta**
+   - Coleta de parâmetros (valor, horas, cronograma).
+   - Geração automatizada de proposta em Markdown.
+   - Preview e exportação da proposta.
+
+8. **Envio e Negociação**
+   - Confirmação de envio da proposta.
+   - Acompanhamento de status (aceita, recusada, aguardando).
+   - Registro de feedbacks e reinício de fluxo, se necessário.
+
+9. **Fechamento e Pós-venda**
+   - Orientação sobre próximos passos (contrato, kick-off).
+   - Atualização de status no CRM.
+
+---
+
+## Principais Funcionalidades e Agentes
+
+- **Consultor de Diagnóstico:** Intake, diagnóstico, roadmap, propostas, integração com ClickUp.
+- **Especialista Técnico:** Implementação técnica das soluções.
+- **Arquiteto de Software:** Design de arquitetura, análise técnica.
+- **Analista de ROI:** Análise de retorno sobre investimento.
+- **Gerente de Marketing Digital:** Geração de leads, criação de campanhas e leads no CRM.
+- **Coordenador de Projetos:** Orquestração, acompanhamento de projetos e tarefas.
+- **Suporte Administrativo:** Pós-venda, agendamento (Cal.com), suporte não-técnico.
+- **CEO:** Estratégia, expansão e relacionamento VIP.
+
+Cada agente possui scripts e ferramentas próprias, localizados em seus respectivos diretórios.
+
+---
+
+## Integrações e Tecnologias
+
+- **Python** (com Streamlit para interface)
+- **OpenAI API** (para geração de conteúdo e automação de propostas)
+- **ClickUp API** (CRM: criação e atualização de tarefas, funil de vendas)
+- **Cal.com API** (agendamento de reuniões)
+- **Pandas** (tratamento de dados)
+- **Ambiente virtual** (venv)
+
+---
+
+## Instalação e Configuração
+
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/seu-usuario/FSTech_Consulting_Agency_openai_integrated.git
+   cd FSTech_Consulting_Agency_openai_integrated
+   ```
+
+2. **Crie e ative um ambiente virtual:**
+   ```bash
+   python -m venv venv
+   # Ative o ambiente (Windows):
+   venv\Scripts\activate
+   # Ou (Linux/Mac):
+   source venv/bin/activate
+   ```
+
+3. **Instale as dependências:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure as variáveis de ambiente:**
+   - Copie `.env.example` para `.env` e preencha com suas chaves:
+     ```env
+     CLICKUP_API_KEY=SUA_CHAVE_API_CLICKUP_AQUI
+     CALCOM_API_KEY=SUA_CHAVE_API_CALCOM_AQUI
+     OPENAI_API_KEY=SUA_CHAVE_API_OPENAI_AQUI
+     ```
+
+5. **Execute a aplicação principal:**
+   ```bash
+   streamlit run app.py
+   ```
+
+---
+
+## Como Usar
+
+- Acesse a interface web do Streamlit (geralmente em http://localhost:8501).
+- Siga as etapas do fluxo operacional, preenchendo os dados conforme solicitado.
+- Utilize as abas para acompanhar logs, interagir com agentes e acessar informações sobre o sistema.
+- Propostas, diagnósticos e registros são gerados automaticamente e podem ser exportados ou enviados ao cliente.
+
+---
+
+## Contribuindo com o Projeto
+
+1. **Fork este repositório** e crie uma branch para sua feature ou correção.
+2. **Siga o padrão de código** (PEP8 para Python) e documente suas funções.
+3. **Adicione testes** na pasta `tests/` sempre que possível.
+4. **Abra um Pull Request** detalhando sua contribuição.
+5. Sugestões de melhorias, novos fluxos e integrações são bem-vindos!
+
+---
+
+## Roadmap e Próximos Passos
+
+- Refino da interface e experiência do usuário.
+- Expansão dos fluxos pós-venda e gestão de projetos.
+- Novas integrações (ex: ERPs, WhatsApp, automações adicionais).
+- Maior cobertura de testes automatizados.
+- Internacionalização e documentação multilíngue.
+
+---
+
+## Suporte e Contato
+
+- Dúvidas, sugestões ou problemas: abra uma issue ou envie email para contato@fstechagency.com
+- Mais detalhes sobre missão, visão e valores: consulte `agency_manifesto.md`
+- Para detalhes técnicos de cada agente, consulte os diretórios correspondentes e o `MANUAL.md`
+
+---
+
+**FSTech Consulting Agency — Tecnologia simplificada para o seu crescimento.**
 
 ## Agentes e Funcionalidades Chave
 
