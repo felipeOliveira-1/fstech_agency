@@ -28,63 +28,19 @@ from FSTech_Consulting_Agency.orquestrador_fstech import (
 from FSTech_Consulting_Agency.utils.clickup_client import create_crm_task, update_task_status
 from FSTech_Consulting_Agency.Suporte_Administrativo.tools.appointment_scheduler_manager import schedule_meeting_calcom
 
-# Create cache for session state
-if 'process_started' not in st.session_state:
-    st.session_state.process_started = False
-if 'current_step' not in st.session_state:
-    st.session_state.current_step = 0
-if 'client_name' not in st.session_state:
-    st.session_state.client_name = ""
-if 'client_company' not in st.session_state:
-    st.session_state.client_company = ""
-if 'client_email' not in st.session_state:
-    st.session_state.client_email = ""
-if 'briefing' not in st.session_state:
-    st.session_state.briefing = ""
-if 'lead_source' not in st.session_state:
-    st.session_state.lead_source = ""
-if 'objetivo_cliente' not in st.session_state:
-    st.session_state.objetivo_cliente = ""
-if 'logs' not in st.session_state:
-    st.session_state.logs = []
-if 'task_id' not in st.session_state:
-    st.session_state.task_id = None
-if 'client_message' not in st.session_state:
-    st.session_state.client_message = ""
-if 'proposal_content' not in st.session_state:
-    st.session_state.proposal_content = ""
-if 'arquitetura_proposta' not in st.session_state:
-    st.session_state.arquitetura_proposta = ""
-if 'roi_summary' not in st.session_state:
-    st.session_state.roi_summary = ""
-if 'meeting_id' not in st.session_state:
-    st.session_state.meeting_id = None
+# Inicializar session_state com valores padrão
+from FSTech_Consulting_Agency.utils.app_helpers import initialize_session_state
+initialize_session_state(st.session_state)
 
-# Helper functions
-def add_log(message, agent="Sistema"):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    st.session_state.logs.append({
-        "timestamp": timestamp,
-        "agent": agent,
-        "message": message
-    })
+# Importar funções auxiliares
+from FSTech_Consulting_Agency.utils.app_helpers import add_log, reset_session
 
-def reset_session():
-    st.session_state.process_started = False
-    st.session_state.current_step = 0
-    st.session_state.client_name = ""
-    st.session_state.client_company = ""
-    st.session_state.client_email = ""
-    st.session_state.briefing = ""
-    st.session_state.objetivo_cliente = ""
-    st.session_state.lead_source = ""
-    st.session_state.logs = []
-    st.session_state.task_id = None
-    st.session_state.client_message = ""
-    st.session_state.proposal_content = ""
-    st.session_state.arquitetura_proposta = ""
-    st.session_state.roi_summary = ""
-    st.session_state.meeting_id = None
+# Wrappers para manter compatibilidade (opcional)
+def _add_log(message, agent="Sistema"):
+    add_log(st.session_state, message, agent)
+
+def _reset_session():
+    reset_session(st.session_state)
 
 # Streamlit UI
 st.set_page_config(
@@ -218,15 +174,15 @@ with tab_fluxo:
                         task_id = create_crm_task(task_name, description)
                         if task_id:
                             st.session_state.task_id = task_id
-                            add_log(f"Lead criado no CRM ClickUp com ID: {task_id}", "CRM")
+                            _add_log(f"Lead criado no CRM ClickUp com ID: {task_id}", "CRM")
                         else:
-                            add_log("Não foi possível criar o registro no CRM. Continuando sem integração.", "Sistema")
+                            _add_log("Não foi possível criar o registro no CRM. Continuando sem integração.", "Sistema")
                     except Exception as e:
-                        add_log(f"Erro ao criar lead no CRM: {str(e)}", "Sistema")
+                        _add_log(f"Erro ao criar lead no CRM: {str(e)}", "Sistema")
                 
                 st.session_state.process_started = True
                 st.session_state.current_step = 1
-                add_log(f"Iniciando fluxo para cliente: {st.session_state.client_name} da empresa {st.session_state.client_company}")
+                _add_log(f"Iniciando fluxo para cliente: {st.session_state.client_name} da empresa {st.session_state.client_company}")
                 st.rerun()
     
     else:
@@ -298,7 +254,7 @@ Equipe FSTech Consulting Agency"""
                         # Save client message to session state
                         st.session_state.client_message = client_message
                         
-                        add_log("Briefing analisado. Mensagem de abordagem criada.", "Consultor de Diagnóstico")
+                        _add_log("Briefing analisado. Mensagem de abordagem criada.", "Consultor de Diagnóstico")
                         time.sleep(1)  # Pequena pausa para feedback visual
                         st.rerun()
             
@@ -325,11 +281,11 @@ Equipe FSTech Consulting Agency"""
                         if st.session_state.task_id:
                             try:
                                 update_task_status(st.session_state.task_id, "contato_realizado")
-                                add_log("Status atualizado no CRM para 'Contato Realizado'", "CRM")
+                                _add_log("Status atualizado no CRM para 'Contato Realizado'", "CRM")
                             except Exception as e:
-                                add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                                _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                         
-                        add_log("Mensagem de abordagem enviada ao cliente", "Consultor de Diagnóstico")
+                        _add_log("Mensagem de abordagem enviada ao cliente", "Consultor de Diagnóstico")
                         st.success("Mensagem enviada! Status atualizado no CRM. Aguarde a resposta do cliente para agendar a reunião.")
                 
                 # Se a reunião já foi agendada em resposta à mensagem
@@ -366,7 +322,7 @@ Equipe FSTech Consulting Agency"""
                             local += f" - {st.session_state.endereco_reuniao}"
                         
                         st.session_state.info_reuniao = f"Reunião marcada para {data_hora}. Local: {local}"
-                        add_log(f"Informações de agendamento registradas: {st.session_state.info_reuniao}", "Consultor de Diagnóstico")
+                        _add_log(f"Informações de agendamento registradas: {st.session_state.info_reuniao}", "Consultor de Diagnóstico")
                         st.session_state.pre_agendamento = True
                         st.rerun()
                 
@@ -383,9 +339,9 @@ Equipe FSTech Consulting Agency"""
                             if st.session_state.task_id:
                                 try:
                                     update_task_status(st.session_state.task_id, "reuniao_agendada")
-                                    add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
+                                    _add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
                                 except Exception as e:
-                                    add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                                    _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                             
                             # Salvar as informações de data e hora para reutilizar na etapa formal
                             st.session_state.data_reuniao_salva = st.session_state.data_proposta
@@ -394,7 +350,7 @@ Equipe FSTech Consulting Agency"""
                             if 'endereco_reuniao' in st.session_state:
                                 st.session_state.endereco_reuniao_salvo = st.session_state.endereco_reuniao
                             
-                            add_log(f"Reunião com o cliente confirmada: {st.session_state.info_reuniao}", "Consultor de Diagnóstico")
+                            _add_log(f"Reunião com o cliente confirmada: {st.session_state.info_reuniao}", "Consultor de Diagnóstico")
                             st.success("Reunião confirmada! Prosseguindo para o agendamento formal no sistema.")
                             time.sleep(1)  # Pequena pausa para feedback visual
                             st.session_state.current_step = 3  # Pula diretamente para o passo 3 (agendamento da reunião)
@@ -409,7 +365,7 @@ Equipe FSTech Consulting Agency"""
                         
                         with col2b:
                             if st.button("Não, Ainda Aguardando"):
-                                add_log("Aguardando resposta do cliente para confirmação da reunião", "Sistema")
+                                _add_log("Aguardando resposta do cliente para confirmação da reunião", "Sistema")
                                 st.info("Continue acompanhando. Você pode retornar mais tarde para atualizar o status.")
         
         elif st.session_state.current_step == 2:
@@ -425,7 +381,7 @@ Equipe FSTech Consulting Agency"""
             if st.button("Analisar Oportunidade"):
                 with st.spinner("Analisando..."):
                     time.sleep(2)  # Simulação de processamento
-                    add_log(f"Oportunidade analisada. Complexidade: {complexidade}", "CEO")
+                    _add_log(f"Oportunidade analisada. Complexidade: {complexidade}", "CEO")
                     st.session_state.current_step = 3
                     st.rerun()
         elif st.session_state.current_step == 3:
@@ -552,29 +508,29 @@ Equipe FSTech Consulting Agency"""
                                         if meeting_url:
                                             success_message += f" | Link da videoconferência: {meeting_url}"
                                         
-                                        add_log(success_message, "Suporte Administrativo")
+                                        _add_log(success_message, "Suporte Administrativo")
                                     # Caso o resultado contenha "sucesso" no formato texto (para compatibilidade)
                                     elif "sucesso" in str(result).lower() and "ID:" in str(result):
                                         meeting_id = str(result).split("ID:")[-1].strip()
                                         st.session_state.meeting_id = meeting_id
-                                        add_log(f"Reunião agendada no Cal.com! ID: {meeting_id}", "Suporte Administrativo")
+                                        _add_log(f"Reunião agendada no Cal.com! ID: {meeting_id}", "Suporte Administrativo")
                                     else:
                                         # Vamos considerar sucesso mesmo se o parsing falhar mas o agendamento for criado
                                         st.session_state.meeting_id = "unknown_id"
-                                        add_log("Reunião possivelmente agendada no Cal.com, mas não foi possível confirmar o ID", "Suporte Administrativo")
+                                        _add_log("Reunião possivelmente agendada no Cal.com, mas não foi possível confirmar o ID", "Suporte Administrativo")
                                 except Exception as parse_error:
                                     st.warning(f"Erro ao processar resposta do Cal.com: {parse_error}")
                                     # Assumimos que o agendamento foi feito
                                     st.session_state.meeting_id = "parsing_failed"
-                                    add_log(f"Reunião possivelmente agendada no Cal.com, erro ao processar resposta", "Suporte Administrativo")
+                                    _add_log(f"Reunião possivelmente agendada no Cal.com, erro ao processar resposta", "Suporte Administrativo")
                                 
                                 # Update ClickUp task status
                                 if st.session_state.task_id:
                                     try:
                                         update_task_status(st.session_state.task_id, "reuniao_agendada")
-                                        add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
+                                        _add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
                                     except Exception as e:
-                                        add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                                        _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                                 
                                 st.success(f"Reunião agendada com sucesso para {data_reuniao} às {hora_reuniao}")
                                 st.session_state.current_step = 4
@@ -583,22 +539,22 @@ Equipe FSTech Consulting Agency"""
                         except Exception as e:
                             # Log error but allow manual scheduling
                             st.error(f"Erro ao integrar com Cal.com: {str(e)}")
-                            add_log(f"Erro ao agendar no Cal.com: {str(e)}", "Sistema")
+                            _add_log(f"Erro ao agendar no Cal.com: {str(e)}", "Sistema")
             
             # Manual scheduling option as fallback
             with st.expander("Agendar Manualmente (sem integração)"):
                 st.info("Use esta opção se a integração com Cal.com não estiver disponível.")
                 if st.button("Confirmar Agendamento Manual"):
                     data_hora = f"{data_reuniao} às {hora_reuniao}"
-                    add_log(f"Reunião agendada manualmente para {data_hora}", "Suporte Administrativo")
+                    _add_log(f"Reunião agendada manualmente para {data_hora}", "Suporte Administrativo")
                     
                     # Update ClickUp task status even for manual scheduling
                     if st.session_state.task_id:
                         try:
                             update_task_status(st.session_state.task_id, "reuniao_agendada")
-                            add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
+                            _add_log("Status atualizado no CRM para 'Reunião Agendada'", "CRM")
                         except Exception as e:
-                            add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                            _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                             
                     st.success(f"Reunião agendada manualmente para {data_hora}")
                     st.session_state.current_step = 4
@@ -613,7 +569,7 @@ Equipe FSTech Consulting Agency"""
             if st.button("Realizar Análise Técnica"):
                 with st.spinner("Analisando..."):
                     time.sleep(3)
-                    add_log("Análise técnica concluída. Solução viável.", "Arquiteto de Software")
+                    _add_log("Análise técnica concluída. Solução viável.", "Arquiteto de Software")
                     st.session_state.current_step = 5
                     st.rerun()
                     
@@ -624,7 +580,7 @@ Equipe FSTech Consulting Agency"""
             if st.button("Realizar Pesquisa de Mercado"):
                 with st.spinner("Pesquisando..."):
                     time.sleep(3)
-                    add_log("Pesquisa de mercado concluída. ROI estimado em 240%.", "Analista de ROI")
+                    _add_log("Pesquisa de mercado concluída. ROI estimado em 240%.", "Analista de ROI")
                     st.session_state.current_step = 6
                     st.rerun()
                     
@@ -641,146 +597,122 @@ Equipe FSTech Consulting Agency"""
                     if st.button("Sim, Reunião Realizada", type="primary"):
                         # Update ClickUp task status to "Reunião Realizada"
                         if st.session_state.task_id:
-                            try:
-                                update_task_status(st.session_state.task_id, "reuniao_realizada")
-                                add_log("Status atualizado no CRM para 'Reunião Realizada'", "CRM")
+                            # Usar o serviço de CRM modularizado
+                            from FSTech_Consulting_Agency.utils.crm_service import update_crm_status
+                            
+                            if update_crm_status(st.session_state, st.session_state.task_id, "reuniao_realizada"):
                                 st.success("Status atualizado com sucesso. Prosseguindo para geração da proposta.")
                                 st.session_state.reuniao_realizada = True
                                 time.sleep(1.5)  # Pausa para feedback visual
                                 st.rerun()
-                            except Exception as e:
-                                add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
-                                st.error(f"Erro ao atualizar status: {str(e)}")
+                            else:
+                                st.error("Erro ao atualizar status no CRM.")
+                        else:
+                            # Mesmo sem CRM, seguimos o fluxo
+                            st.session_state.reuniao_realizada = True
+                            st.rerun()
+                                
                 with col2:
                     if st.button("Reagendar Reunião", type="secondary"):
                         st.session_state.current_step = 3  # Voltar para a etapa de agendamento
-                        add_log("Reunião precisou ser reagendada", "Consultor de Diagnóstico")
+                        _add_log("Reunião precisou ser reagendada", "Consultor de Diagnóstico")
                         st.rerun()
             
             # Se a reunião foi confirmada como realizada, solicitar upload de transcrição/resumo antes da proposta
             if 'reuniao_realizada' in st.session_state and st.session_state.reuniao_realizada:
+                from FSTech_Consulting_Agency.utils.meeting_service import process_transcription_upload
+                
                 st.markdown("#### Faça upload da transcrição e resumo da reunião realizada")
                 uploaded_file = st.file_uploader("Transcrição/Resumo da Reunião (.txt, .md, .pdf)", type=["txt", "md", "pdf"])
                 resumo_manual = st.text_area("Ou cole aqui um resumo/manual da reunião", height=200)
-
-                conteudo_reuniao = None
+                
+                # Processar arquivo de upload
                 if uploaded_file is not None:
-                    # PDF handling could be added if needed
-                    if uploaded_file.type == "application/pdf":
-                        try:
-                            import PyPDF2
-                            reader = PyPDF2.PdfReader(uploaded_file)
-                            conteudo_reuniao = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-                        except Exception as e:
-                            st.error(f"Erro ao ler PDF: {e}")
+                    success, message = process_transcription_upload(uploaded_file, st.session_state)
+                    if success:
+                        st.success(message)
                     else:
-                        conteudo_reuniao = uploaded_file.read().decode("utf-8")
-                    st.session_state.reuniao_transcricao = conteudo_reuniao
-                    st.success("Arquivo carregado com sucesso!")
+                        st.error(message)
+                
+                # Processar resumo manual
                 elif resumo_manual.strip():
-                    conteudo_reuniao = resumo_manual.strip()
-                    st.session_state.reuniao_transcricao = conteudo_reuniao
+                    if len(resumo_manual.strip()) > 10:  # Verificação mínima de conteúdo
+                        st.session_state.reuniao_transcricao = resumo_manual.strip()
+                        _add_log(f"Resumo manual da reunião registrado ({len(resumo_manual)} caracteres)", "Sistema")
+                        st.success("Resumo manual salvo com sucesso!")
+                    else:
+                        st.warning("O resumo manual parece muito curto. Por favor, forneça mais detalhes.")
+                
+                # Verificar se há transcrição disponível e mostrar botão para prosseguir
+                if 'reuniao_transcricao' in st.session_state and st.session_state.reuniao_transcricao:
+                    st.markdown("---")
+                    st.markdown("**Resumo/Transcrição disponível para os agentes.**")
+                    if st.button("Confirmar e Prosseguir para Análise Técnica e ROI", type="primary"):
+                        # Executar agentes com a transcrição antes de liberar a proposta
+                        from FSTech_Consulting_Agency.utils.agent_service import run_agents_analysis
+                        
+                        with st.spinner("Executando análise com base na transcrição..."):
+                            # Executar análise completa com Arquiteto e Analista de ROI
+                            resultados = run_agents_analysis(st.session_state)
+                            st.success("Análises concluídas com sucesso!")
+                            st.session_state.current_step = 7
+                            time.sleep(0.5)  # Pequena pausa para feedback visual
+                            st.rerun()
+                else:
+                    st.warning("Por favor, faça o upload do arquivo ou preencha o resumo antes de prosseguir.")
 
-        if 'reuniao_transcricao' in st.session_state and st.session_state.reuniao_transcricao:
-            st.markdown("---")
-            st.markdown("**Resumo/Transcrição disponível para os agentes.**")
-            if st.button("Confirmar e Prosseguir para Análise Técnica e ROI", type="primary"):
-                # Executar agentes com a transcrição antes de liberar a proposta
-                from FSTech_Consulting_Agency.Arquiteto_de_Software.arquiteto_de_software import run_arquiteto_task
-                from FSTech_Consulting_Agency.Analista_ROI.analista_roi import run_analista_roi_task
-                # Rodar análise técnica e ROI (pode ser expandido conforme o fluxo real)
-                arquitetura, _ = run_arquiteto_task("Análise de arquitetura baseada na reunião", {})
-                st.session_state.arquitetura_proposta = arquitetura if isinstance(arquitetura, str) else str(arquitetura)
-                roi, _ = run_analista_roi_task("Projeção de ROI baseada na reunião", {})
-                st.session_state.roi_summary = roi["analysis_summary"] if isinstance(roi, dict) and "analysis_summary" in roi else str(roi)
-                st.session_state.current_step = 7
-                st.rerun()
-        else:
-            st.warning("Por favor, faça o upload do arquivo ou preencha o resumo antes de prosseguir.")
 
         # Technical analysis summary displayed from previous step
         if st.session_state.arquitetura_proposta:
             with st.expander("Análise Técnica do Arquiteto", expanded=False):
                 st.markdown(st.session_state.arquitetura_proposta)
                 
-                with col2:
-                    horas_estimadas = st.number_input("Horas Estimadas", min_value=10, max_value=1000, value=80, step=10)
-                    timeline_map = {
-                        "baixa": "2-3 semanas",
-                        "média": "4-6 semanas",
-                        "alta": "8-12 semanas"
-                    }
-                    timeline = timeline_map.get(nivel_complexidade, "4-8 semanas")
-                    st.markdown(f"**Timeline Estimado:** {timeline}")
-                
                 # Generate proposal when button is clicked
                 if st.session_state.proposal_content == "" and st.button("Gerar Proposta"):
                     with st.spinner("Gerando proposta comercial completa..."):
-                        # If architecture or ROI analysis don't exist, create placeholders
-                        if not st.session_state.arquitetura_proposta:
-                            st.session_state.arquitetura_proposta = f"Nossa equipe analisou os requisitos do projeto e propomos uma arquitetura escalável e segura que atenderá às necessidades da {st.session_state.client_company}.\n\nA solução incluirá: análise de requisitos, design de interface, desenvolvimento de APIs, integração com sistemas existentes, testes e implementação."
+                        # Importar o serviço de agentes
+                        from FSTech_Consulting_Agency.utils.agent_service import run_agents_analysis
                         
-                        if not st.session_state.roi_summary:
-                            st.session_state.roi_summary = f"Baseado em nossa análise, estimamos um ROI de 240% para este projeto em um período de 12 meses.\n\nBenefícios esperados:\n- Aumento de eficiência operacional em 35%\n- Redução de custos operacionais em 25%\n- Melhoria na experiência do cliente\n- Tempo de retorno do investimento: 5 meses"
+                        # Executar análise completa com Arquiteto e Analista de ROI
+                        with st.spinner("Executando análise técnica e financeira..."):
+                            resultados = run_agents_analysis(st.session_state)
+                            
+                            # Extrair informações dos resultados
+                            nivel_complexidade = resultados['nivel_complexidade']
+                            horas_estimadas = resultados['horas_estimadas']
+                            valor_proposta = resultados['valor_proposta']
+                            timeline = resultados['timeline']
+                            
+                            st.success("Análises técnica e financeira concluídas!")
+                            time.sleep(0.5)  # Pequena pausa para melhor feedback visual
                         
                         # Generate markdown proposal
-                        proposta = f"""# Proposta Comercial - {st.session_state.client_company}
-
-## 1. Objetivos
-De acordo com as informações compartilhadas durante nossa reunião com {st.session_state.client_name}, entendemos que o principal objetivo é {st.session_state.objetivo_cliente or 'desenvolver uma solução tecnológica que atenda às necessidades do negócio'}.
-
-Briefing inicial:
-> {st.session_state.briefing}
-
-## 2. Solução Proposta
-{st.session_state.arquitetura_proposta}
-
-Complexidade estimada: **{nivel_complexidade.title()}**
-
-## 3. Investimento
-
-| Item | Detalhe | Valor |
-| ---- | ------- | ----- |
-| Desenvolvimento | {horas_estimadas} horas | R$ {valor_proposta:.2f} |
-| Complexidade | {nivel_complexidade.upper()} | |
-| Timeline estimado | {timeline} | |
-
-## 4. Condições Comerciais
-
-- **Prazo de Validade:** Esta proposta é válida por 15 dias a partir da data de emissão.
-- **Forma de Pagamento:** 40% no início do projeto, 30% na entrega parcial e 30% na entrega final.
-- **Suporte:** 3 meses de suporte técnico inclusos após a entrega final.
-
-## 5. Próximos Passos
-
-1. Aceite da proposta
-2. Assinatura de contrato
-3. Reunião de kick-off
-4. Início do desenvolvimento
-
----
-
-Agradecemos a oportunidade e estamos à disposição para quaisquer esclarecimentos adicionais.
-
-**FSTech Consulting Agency**  
-www.fstechagency.com  
-contato@fstechagency.com  
-+55 11 9999-9999
-"""
+                        from FSTech_Consulting_Agency.utils.proposal_service import gerar_proposta_markdown
+                        proposta = gerar_proposta_markdown(
+                            st.session_state.client_company,
+                            st.session_state.client_name,
+                            st.session_state.objetivo_cliente,
+                            st.session_state.briefing,
+                            st.session_state.arquitetura_proposta,
+                            nivel_complexidade,
+                            horas_estimadas,
+                            valor_proposta,
+                            timeline
+                        )
                     
-                    # Save proposal to session state
-                    st.session_state.proposal_content = proposta
-                    
-                    # Update ClickUp task status
-                    if st.session_state.task_id:
-                        try:
-                            update_task_status(st.session_state.task_id, "proposta_enviada")
-                            add_log("Status atualizado no CRM para 'Proposta Enviada'", "CRM")
-                        except Exception as e:
-                            add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
-                    
-                    add_log(f"Proposta gerada no valor de R$ {valor_proposta:.2f}", "Consultor de Diagnóstico")
-                    time.sleep(1)  # Pequena pausa para feedback visual
+                        # Save proposal to session state
+                        st.session_state.proposal_content = proposta
+                        
+                        # Update ClickUp task status
+                        if st.session_state.task_id:
+                            try:
+                                update_task_status(st.session_state.task_id, "proposta_enviada")
+                                _add_log("Status atualizado no CRM para 'Proposta Enviada'", "CRM")
+                            except Exception as e:
+                                _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                        
+                        _add_log(f"Proposta gerada no valor de R$ {valor_proposta:.2f}", "Consultor de Diagnóstico")
+                        time.sleep(1)  # Pequena pausa para feedback visual
             
             # Display proposal if generated
             if st.session_state.proposal_content:
@@ -796,7 +728,7 @@ contato@fstechagency.com
                 
                 # Botão para confirmar que a proposta está pronta 
                 if st.button("Proposta Finalizada - Pronta para Envio"):
-                    add_log("Proposta finalizada e pronta para envio", "Consultor de Diagnóstico")
+                    _add_log("Proposta finalizada e pronta para envio", "Consultor de Diagnóstico")
                     st.session_state.current_step = 7
                     st.rerun()
                     
@@ -820,16 +752,16 @@ contato@fstechagency.com
                     if st.session_state.task_id:
                         try:
                             update_task_status(st.session_state.task_id, "proposta_enviada")
-                            add_log("Status atualizado no CRM para 'Proposta Enviada'", "CRM")
+                            _add_log("Status atualizado no CRM para 'Proposta Enviada'", "CRM")
                             
                             # Após confirmar o envio, automaticamente atualizar para Aguardando Resposta
                             time.sleep(1) # Pequena pausa
                             update_task_status(st.session_state.task_id, "aguardando_resposta")
-                            add_log("Status atualizado no CRM para 'Aguardando Resposta'", "CRM")
+                            _add_log("Status atualizado no CRM para 'Aguardando Resposta'", "CRM")
                         except Exception as e:
-                            add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                            _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                     
-                    add_log("Proposta enviada ao cliente. Aguardando resposta.", "Consultor de Diagnóstico")
+                    _add_log("Proposta enviada ao cliente. Aguardando resposta.", "Consultor de Diagnóstico")
                     st.success("Status atualizado: Proposta enviada e aguardando resposta do cliente.")
                     st.session_state.proposta_enviada = True
                     st.rerun()
@@ -853,11 +785,11 @@ contato@fstechagency.com
                         if st.session_state.task_id:
                             try:
                                 update_task_status(st.session_state.task_id, "proposta_aceita")
-                                add_log("Status atualizado no CRM para 'Proposta Aceita'", "CRM")
+                                _add_log("Status atualizado no CRM para 'Proposta Aceita'", "CRM")
                             except Exception as e:
-                                add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                                _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                         
-                        add_log("🎉 Proposta aceita pelo cliente!", "Sistema")
+                        _add_log("🎉 Proposta aceita pelo cliente!", "Sistema")
                         st.success("Proposta aceita pelo cliente! Prosseguindo para confirmação de pagamento.")
                         st.session_state.proposta_aceita = True
                         st.balloons()
@@ -870,13 +802,13 @@ contato@fstechagency.com
                         motivo_recusa = st.text_area("Motivo da recusa", 
                                                     placeholder="Registre aqui o feedback do cliente sobre a recusa...")
                         if motivo_recusa:
-                            add_log(f"Feedback de recusa: {motivo_recusa}", "Sistema")
+                            _add_log(f"Feedback de recusa: {motivo_recusa}", "Sistema")
                         
                         st.warning("Proposta recusada. Considere enviar uma nova proposta ajustada.")
                         
                         # Opção para reiniciar processo
                         if st.button("Iniciar Novo Fluxo", key="novo_fluxo_recusado"):
-                            reset_session()
+                            _reset_session()
                             st.rerun()
                         
                     ainda_aguardando = st.button("Ainda Aguardando Resposta")
@@ -897,11 +829,11 @@ contato@fstechagency.com
                         if st.session_state.task_id:
                             try:
                                 update_task_status(st.session_state.task_id, "venda_realizada")
-                                add_log("Status atualizado no CRM para 'Venda Realizada'", "CRM")
+                                _add_log("Status atualizado no CRM para 'Venda Realizada'", "CRM")
                             except Exception as e:
-                                add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
+                                _add_log(f"Erro ao atualizar status no CRM: {str(e)}", "Sistema")
                         
-                        add_log("💰 Pagamento recebido! Venda concluída com sucesso.", "Sistema")
+                        _add_log("💰 Pagamento recebido! Venda concluída com sucesso.", "Sistema")
                         st.success("Pagamento confirmado! A venda foi realizada com sucesso.")
                         st.markdown("""
                         ### Próximos Passos:
@@ -912,19 +844,19 @@ contato@fstechagency.com
                         
                         # Opção para reiniciar o processo
                         if st.button("Iniciar Novo Fluxo de Venda", type="primary"):
-                            reset_session()
+                            _reset_session()
                             st.rerun()
                 
                 with col2:
                     aguardando_pagamento = st.button("Não, Aguardando Pagamento")
                     if aguardando_pagamento:
                         st.info("Continue acompanhando. Retorne quando o pagamento for confirmado.")
-                        add_log("Aguardando confirmação de pagamento.", "Sistema")
+                        _add_log("Aguardando confirmação de pagamento.", "Sistema")
         
         # Botão para reiniciar fluxo a qualquer momento
         if st.button("Cancelar Fluxo", type="secondary"):
             if st.button("Confirmar Cancelamento"):
-                reset_session()
+                _reset_session()
                 st.rerun()
 
 # Tab 2: Interação Livre
@@ -943,8 +875,8 @@ with tab_interacao:
                 time.sleep(2)
                 response = f"Sua solicitação '{user_input}' foi processada. O orquestrador está trabalhando nisso."
                 st.success(response)
-                add_log(f"Solicitação enviada: {user_input}", "Usuário")
-                add_log(response, "Orquestrador")
+                _add_log(f"Solicitação enviada: {user_input}", "Usuário")
+                _add_log(response, "Orquestrador")
         else:
             st.error("Por favor, digite uma solicitação.")
 
